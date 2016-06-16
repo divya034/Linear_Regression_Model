@@ -157,10 +157,33 @@ $(document).ready(function () {
 </div>
 <div id="part-1-data" class="section level2">
 <h2>Part 1: Data</h2>
+<p>The dataset “movies” is comprised of 651 randomly sampled movies produced and released before 2016. This dataset includes information from both <a href="https://www.rottentomatoes.com/">Rotten Tomatoes</a> and <a href="http://www.imdb.com/">IMDb</a>.</p>
+<p>Rotten Tomatoes is a website launched in August 1998 devoted to film reviews and news; it is widely known as a film review aggregator. Coverage now includes TV content as well. The name derives from the practice of audiences throwing rotten tomatoes when disapproving of a poor stage performance. The company was created by Senh Duong and since January 2010 has been owned by Flixster, which itself was acquired in 2011 by Warner Bros.</p>
+<p>The Internet Movie Database (abbreviated IMDb) is an online database of information related to films, television programs and video games, including cast, production crew, fictional characters, biographies, plot summaries, trivia and reviews. Actors and crew can post their own résumé and upload photos of themselves for a yearly fee. U.S. users can view over 6,000 movies and television shows from CBS, Sony, and various independent filmmakers.</p>
+<p>This dataset contains information about the type of the movie, genre, runtime, studio, release, ctics rating, director and so on.</p>
+<div id="sampling-design" class="section level3">
+<h3>Sampling Design</h3>
+<p>The target population of this dataset is U.S. movies theatrically released between 1970 and 2014. The movies composing this dataset are randomly sampled from two famous Internet databases for movies : Rotten Tomatoes and IMDb.</p>
+</div>
+<div id="scope-of-inference" class="section level3">
+<h3>Scope of Inference</h3>
+<p>From what is described in the points above, it seems pretty clear that the “movies” dataset should be considered the result of an observational retrospective study that uses a random sampling design to select a representative sample from U.S. movies.</p>
+<div id="generalizability" class="section level4">
+<h4>Generalizability</h4>
+<p>As it is, our results should be generalizable to all U.S. movies released between 1970 and 2014.</p>
+</div>
+<div id="causality" class="section level4">
+<h4>Causality</h4>
+<p>As is well-known, making causal conclusions based on observational data is not recommended. Observational studies are only sufficient to show associations.</p>
 <hr />
+</div>
+</div>
 </div>
 <div id="part-2-research-question" class="section level2">
 <h2>Part 2: Research question</h2>
+<p>What makes a movie popular ? It’s a difficult question to answer, one simple answer would be the total earnings of the movie (theater entries and DVD sellings). However, our dataset doesn’t include the earnings of the different movies it contains, so we have to select another variable that might characterize the poularity of a movie.</p>
+<p>Our variable of choice will be the IMDb rating (<em>imdb_rating</em>) and/or the audience score (<em>audience_score</em>). It is well known that good reviews on IMDb or Rotten Tomatoes are associated with high earnings for a movie.</p>
+<p>Our analysis will aim to answer the following research question : “Can we predict the popularity of a movie (<em>imdb_rating</em>/<em>audience_score</em> variables) by knowing only its type (<em>title_type</em> variable), genre (<em>genre</em> variable), runtime (<em>runtime</em> variable), MPAA rating (<em>mpaa_rating</em> variable), release month (<em>thtr_rel_month</em> variable), release day (<em>thtr_rel_day</em> variable), number of IMDb votes (<em>imdb_num_votes</em> variable), best picture nomination (<em>best_pic_nom</em> variable), director (<em>director</em> variable) and star (<em>actor1</em> variable) ?”.</p>
 <hr />
 </div>
 <div id="part-3-exploratory-data-analysis" class="section level2">
