@@ -15,16 +15,14 @@ output:
 library(ggplot2)
 library(dplyr)
 library(statsr)
+library(GGally)
 ```
 
 ### Load data
 
-Make sure your data and R Markdown files are in the same directory. When loaded
-your data file will be called `movies`. Delete this note when before you submit 
-your work. 
 
 ```{r load-data}
-#load("movies.Rdata")
+load("movies.Rdata")
 ```
 
 
@@ -65,23 +63,133 @@ What makes a movie popular ? It's a difficult question to answer, one simple ans
 
 Our variable of choice will be the IMDb rating (*imdb_rating*) and/or the audience score (*audience_score*). It is well known that good reviews on IMDb or Rotten Tomatoes are associated with high earnings for a movie.
 
-Our analysis will aim to answer the following research question : "Can we predict the popularity of a movie (*imdb_rating*/*audience_score* variables) by knowing only its type (*title_type* variable), genre (*genre* variable), runtime (*runtime* variable), MPAA rating (*mpaa_rating* variable), release month (*thtr_rel_month* variable), release day (*thtr_rel_day* variable), number of IMDb votes (*imdb_num_votes* variable), best picture nomination (*best_pic_nom* variable), director (*director* variable) and star (*actor1* variable) ?".
+Our analysis will aim to answer the following research question : "Can we predict the popularity of a movie (*imdb_rating*/*audience_score* variables) by knowing only its type (*title_type* variable), genre (*genre* variable), runtime (*runtime* variable), MPAA rating (*mpaa_rating* variable), release month (*thtr_rel_month* variable), release day (*thtr_rel_day* variable), number of IMDb votes (*imdb_num_votes* variable), critics score (*critics_score* variable) and best picture nomination (*best_pic_nom* variable) ?".
 
 * * *
 
 ## Part 3: Exploratory data analysis
 
-NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
-button above. Make sure that your code is visible in the project you submit. 
-Delete this note when before you submit your work.
+First we will check if there is a high correlation between both our potential response variables : *imdb_rating* and *audience_score*.
+
+```{r}
+cor(movies$imdb_rating, movies$audience_score)
+```
+
+As the correlation between these two variables is pretty high, we may consider only one of them. For our study, we will choose *audience_score* as the response variable.
+
+First of all, we will create a reduced dataset from the "movies" dataset by subsetting for our variables of interest and eliminating all NA values.
+
+```{r}
+movies_reg <- subset(movies, select = c(c("audience_score", "title_type", "genre", "runtime", "mpaa_rating", "thtr_rel_month", "thtr_rel_day", "imdb_num_votes", "critics_score", "best_pic_nom")))
+movies_reg <- movies_reg %>% filter(runtime != "NA")
+```
+
+Let's begin by plotting a histogram of the response variable.
+
+```{r}
+ggplot(movies_reg, aes(x = audience_score)) + geom_histogram() + xlab("Audience Score") + ylab("Count") + ggtitle("Histogram of Audience Score")
+summary(movies_reg$audience_score)
+```
+
+The distribution of the *audience_score* variable exhibits a left skew and may be uni- or bimodal.
+
+Now, we are able to begin our exploratory data analysis, first we will use boxplots to visualize how our categorical variables of interest interact with the response variable.
+
+```{r}
+ggplot(movies_reg, aes(x = title_type, y = audience_score)) + geom_boxplot() + xlab("Title Type") + ylab("Audience Score") + ggtitle("Audience Score vs. Title Type")
+```
+
+It seems that the variables *title_type* and the response *audience_score* are associated.
+
+```{r}
+ggplot(movies_reg, aes(x = genre, y = audience_score)) + geom_boxplot() + xlab("Genre") + ylab("Audience Score") + ggtitle("Audience Score vs. Genre") + theme(axis.text.x = element_text(angle = -45, hjust = 0))
+```
+
+Here also, it seems that the variables *genre* and the response *audience_score* are associated.
+
+```{r}
+ggplot(movies_reg, aes(x = mpaa_rating, y = audience_score)) + geom_boxplot() + xlab("MPAA Rating") + ylab("Audience Score") + ggtitle("Audience Score vs. MPAA Rating")
+```
+
+Here, it is not so clear that the variables *mpaa_rating* and the response *audience_score* are associated. The variable *mpaa_rating* may not be a good predictor for the response.
+
+```{r}
+ggplot(movies_reg, aes(x = best_pic_nom, y = audience_score)) + geom_boxplot() + xlab("Best Picture Nomination") + ylab("Audience Score") + ggtitle("Audience Score vs. Best Picture Nomination")
+```
+
+Here also, it seems that the variables *best_pic_nom* and the response *audience_score* are associated.
+
+We will now update our "movies_reg" dataset to exclude the *mpaa_rating* variable.
+
+```{r}
+movies_reg <- movies_reg[, -5]
+str(movies_reg)
+```
+
+Now, we will use scatterplots to visualize how our numerical variables of interest interact with our response variable.
+
+```{r warning = FALSE}
+ggpairs(movies_reg, columns = c(1, 4, 5, 6, 7, 8), axisLabels = "none", columnLabels = c("Score", "Runtime", "Rel Mth", "Rel Day", "IMDb Votes", "Critics Sc"), title = "Pairs of Numerical Variables")
+```
+
+As we may see above, the correlations between predictors are not very high, which is a good thing when modeling with linear regression as it helps avoiding collinearity.
 
 * * *
 
 ## Part 4: Modeling
 
-NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
-button above. Make sure that your code is visible in the project you submit. 
-Delete this note when before you submit your work.
+Now we are ready to create our first linear model to predict the response variable. At first, we will include all our variables of interest : *title_type*, *genre*, *runtime*, *thtr_rel_month*, *thtr_rel_day*, *imdb_num_votes*, *critics_score* and *best_pic_nom*.
+
+```{r}
+lm1 <- lm(audience_score ~ title_type + genre + runtime + thtr_rel_month + thtr_rel_day + imdb_num_votes + critics_score + best_pic_nom, data = movies_reg)
+summary(lm1)
+```
+
+In this model, some variables are not statistically significant (their slope is not significantly different from 0) and we have a pretty high adjusted R squared.
+
+We will now proceed with the variable selection : to select the best model answering our research question, we will perform a backward p-value elimination. It means that we will iteratively eliminate the predictor with the highest p-value. The first predictor to be removed from the model is *title_type*, the resulting model is summarised below.
+
+```{r}
+lm2 <- lm(audience_score ~ genre + runtime + thtr_rel_month + thtr_rel_day + imdb_num_votes + critics_score + best_pic_nom, data = movies_reg)
+summary(lm2)
+```
+
+We now have a more model parsimonious model containing 7 predictors with a slightly higher adjusted R squared. The next variable to be eliminated is *thtr_rel_day*.
+
+```{r}
+lm3 <- lm(audience_score ~ genre + runtime + thtr_rel_month + imdb_num_votes + critics_score + best_pic_nom, data = movies_reg)
+summary(lm3)
+```
+
+Again, we have a more model parsimonious model containing 6 predictors with a slightly higher adjusted R squared. The next variable to be eliminated is *runtime*.
+
+```{r}
+lm4 <- lm(audience_score ~ genre + thtr_rel_month + imdb_num_votes + critics_score + best_pic_nom, data = movies_reg)
+summary(lm4)
+```
+
+Once again, we obtain a more parsimonious model and a slightly increased adjusted R squared. The next variable to be eliminated is *thtr_rel_month*.
+
+```{r}
+lm5 <- lm(audience_score ~ genre +imdb_num_votes + critics_score + best_pic_nom, data = movies_reg)
+summary(lm5)
+```
+
+Once again, we obtain a more parsimonious model and a slightly increased adjusted R squared. The next variable to be eliminated is *best_pic_nom*.
+
+```{r}
+lm6 <- lm(audience_score ~ genre + imdb_num_votes + critics_score, data = movies_reg)
+summary(lm6)
+```
+
+In this last model, all the predictors are statistically significant, however our final model will be "lm5" as it has a slightly higher adjusted R squared.
+
+```{r}
+lm_movies <- lm5
+summary(lm_movies)
+```
+
+Finally, we get a linear model where nearly all predictors are significant (p-values less than 5%) and a higher adjusted R squared.
 
 * * *
 
