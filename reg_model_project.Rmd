@@ -245,13 +245,41 @@ ggplot(fortify(lm_movies), aes(x = seq_along(.resid), y = .resid)) + geom_point(
 
 The plot above does not show any particulat pattern, so we may assume that the residuals (and consequently the observations) are independant.
 
+### Interpretation of Model Coefficients
+
+Let us examine the coefficients of our model "lm_movies".
+
+```{r}
+summary(lm_movies)
+```
+
+As an example, we will interpret the coefficient of *critics_score* (a numerical variable) and of *genre:animation* (a categorical variable). The other coefficients can be interpreted in much the same way as these two.
+
+#### Coefficient of *critics_score*
+
+The coefficient of the variable *critics_score* is `r summary(lm_movies)$coefficients[13, 1]`. This means that, all else held constant, increasing the critics score by 1 point leads to an increase of approximately `r summary(lm_movies)$coefficients[13, 1]` audience score points on average.
+
+#### Coefficient of *genre:animation*
+
+The coefficient of the variable *genre:animation* is `r summary(lm_movies)$coefficients[2, 1]`. In this case, the baseline level is "Action & Adventure", so this means that, all else held constant, the audience score of "Animation" movies is `r summary(lm_movies)$coefficients[2, 1]` higher than "Action & Adventure" movies on average.
+
 * * *
 
 ## Part 5: Prediction
 
-NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
-button above. Make sure that your code is visible in the project you submit. 
-Delete this note when before you submit your work.
+The movie which audience score we will try to predict is "Captain America : Civil War", the data about this movie is given in the following table.
+
+```{r}
+civil_war <- data.frame(genre = "Action & Adventure", log_imdb_num_votes = log(239859), critics_score = 90)
+```
+
+The *genre* and *log_imdb_num_votes* variables come from the IMDb website and the *critics_score* variable and the response come from the Rotten Tomatoes website. We will now predict the audience score with our model.
+
+```{r}
+civil_war_pred <- predict(lm_movies, newdata = civil_war, interval = "prediction")
+```
+
+Our prediction for the audience score for "Captain America : Civil War" is `r civil_war_pred[1]`. Our 95% prediction interval for this prediction is ]`r civil_war_pred[2]`, `r civil_war_pred[3]`[, this means that we are 95% confident that the actual audience score for "Captain America : Civil War" is between `r civil_war_pred[2]` and `r civil_war_pred[3]`. Actually, the real audience score of "Captain America : Civil War" (as given by Rotten Tomatoes) is 91/100 which is included in our prediction interval.
 
 * * *
 
