@@ -37,15 +37,15 @@ The dataset "movies" is comprised of 651 randomly sampled movies produced and re
 
 Rotten Tomatoes is a website launched in August 1998 devoted to film reviews and news; it is widely known as a film review aggregator. Coverage now includes TV content as well. The name derives from the practice of audiences throwing rotten tomatoes when disapproving of a poor stage performance. The company was created by Senh Duong and since January 2010 has been owned by Flixster, which itself was acquired in 2011 by Warner Bros.
 
-The Internet Movie Database (abbreviated IMDb) is an online database of information related to films, television programs and video games, including cast, production crew, fictional characters, biographies, plot summaries, trivia and reviews. Actors and crew can post their own résumé and upload photos of themselves for a yearly fee. U.S. users can view over 6,000 movies and television shows from CBS, Sony, and various independent filmmakers.
+The Internet Movie Database (abbreviated IMDb) is an online database of information related to films, television programs and video games, including cast, production crew, fictional characters, biographies, plot summaries, trivia and reviews. Actors and crew can post their own résumé and upload photos of themselves for a yearly fee. U.S. users can view over 6000 movies and television shows from CBS, Sony, and various independent filmmakers.
 
-This dataset contains information about the type of the movie, genre, runtime, studio, release, ctics rating, director and so on.
+This dataset contains information about the type of the movie, genre, runtime, studio, release, critics rating, director and so on.
 
 ### Sampling Design
 
 The target population of this dataset is U.S. movies theatrically released between 1970 and 2014. The movies composing this dataset are randomly sampled from two famous Internet databases for movies : Rotten Tomatoes and IMDb.
 
-### Scope of Inference
+#### Scope of Inference
 
 From what is described in the points above, it seems pretty clear that the "movies" dataset should be considered the result of an observational retrospective study that uses a random sampling design to select a representative sample from U.S. movies.
 
@@ -84,8 +84,7 @@ As the correlation between these two variables is pretty high, we may consider o
 First of all, we will create a reduced dataset from the "movies" dataset by subsetting for our variables of interest and eliminating all NA values.
 
 ```{r}
-movies_reg <- subset(movies, select = c("audience_score", "title_type", "genre", "runtime", "mpaa_rating", "thtr_rel_month", "thtr_rel_day", "imdb_num_votes", "critics_score", "best_pic_nom"))
-movies_reg <- movies_reg %>% filter(runtime != "NA")
+movies_reg <- movies %>% select(audience_score, title_type, genre, runtime, mpaa_rating, thtr_rel_month, thtr_rel_day, imdb_num_votes, critics_score, best_pic_nom) %>% filter(runtime != "NA")
 ```
 
 Let's begin by plotting a histogram of the response variable.
@@ -132,7 +131,8 @@ Here also, it seems that the variables *best_pic_nom* and the response *audience
 We will now update our "movies_reg" dataset to exclude the *mpaa_rating* variable.
 
 ```{r}
-movies_reg <- movies_reg[, -5]
+#movies_reg <- movies_reg[, -5]
+movies_reg <- movies_reg %>% select(-mpaa_rating)
 ```
 
 ### Scatterplots of Response vs. Numerical Predictors
@@ -146,8 +146,7 @@ ggpairs(movies_reg, columns = c(1, 4, 5, 6, 7, 8), axisLabels = "none", columnLa
 As we may see above, the correlations between predictors are not very high, which is a good thing when modeling with linear regression as it helps avoiding collinearity. We may also note that the variables *thtr_rel_month* and *thtr_rel_day* do not seem to be good predictors for our response variable. Moreover, the distribution of the *imdb_num_votes* variable seem strongly right skewed, so we will transform this variable by using the natural log. 
 
 ```{r}
-movies_reg <- movies_reg %>% mutate(log_imdb_num_votes = log(imdb_num_votes))
-movies_reg <- movies_reg[, -c(5, 6, 7)]
+movies_reg <- movies_reg %>% mutate(log_imdb_num_votes = log(imdb_num_votes)) %>% select(-thtr_rel_day, -thtr_rel_month, -imdb_num_votes)
 ```
 
 * * *
@@ -199,7 +198,7 @@ Finally, we get a linear model where nearly all predictors are significant (p-va
 
 ### Model Diagnostics
 
-Our multiple regression model depend on the following assumptions.
+Our multiple regression model depends on the following assumptions.
 
 * Each variable is linearly related to the outcome.
 * The residuals of the model are nearly normal.
@@ -235,7 +234,7 @@ diag_plot7 <- ggplot(lm_movies, aes(x = .fitted, y = abs(.resid))) + geom_point(
 grid.arrange(diag_plot6, diag_plot7, ncol = 2, top = "Plots of Residuals vs. Fitted Values")
 ```
 
-The plots above may show a little deviation from our hypothesis of homoscedasticity, the variability in the residuals tend to decrease as the fitted values increase. We should keep that in mind when we conclude our study.
+The plots above show a little deviation from our hypothesis of homoscedasticity, the variability in the residuals tend to decrease as the fitted values increase. We should keep that in mind when we conclude our study.
 
 #### Independance of residuals
 
@@ -261,7 +260,7 @@ The coefficient of the variable *critics_score* is `r summary(lm_movies)$coeffic
 
 #### Coefficient of *genre:animation*
 
-The coefficient of the variable *genre:animation* is `r summary(lm_movies)$coefficients[2, 1]`. In this case, the baseline level is "Action & Adventure", so this means that, all else held constant, the audience score of "Animation" movies is `r summary(lm_movies)$coefficients[2, 1]` higher than "Action & Adventure" movies on average.
+The coefficient of the variable *genre:animation* is `r summary(lm_movies)$coefficients[2, 1]`. In this case, the baseline level is "Action & Adventure", so this means that, all else held constant, the audience score of "Animation" movies is `r summary(lm_movies)$coefficients[2, 1]` points higher than "Action & Adventure" movies on average.
 
 * * *
 
@@ -285,7 +284,9 @@ Our prediction for the audience score for "Captain America : Civil War" is `r ci
 
 ## Part 6: Conclusion
 
-In conclusion, we may actually predict the popularity of a movie (as represented by the *audience_score* variable) by knowing only its genre, number of IMDb votes and Rotten Tomatoes critics score. The other variables we were interested in were not significantly related to our response. This assertion comes from the fact that we were able to build a linear model to predict our response with the three aforementioned statistically significant predictors. However, we must keep in mind that the adjusted R squared of our final model is `r summary(lm_movies)$adj.r.squared`, so this means that roughly `r summary(lm_movies)$adj.r.squared * 100`% of the varaiability is explained by the model, which is good, but not great. This fact may partly explain why we have a non negligible discrepancy between the audience score predicted by our model and the actual audience score of the "Captain America : Civil War" movie.
+In conclusion, we can actually predict the popularity of a movie (as represented by the *audience_score* variable) by knowing only its genre, number of IMDb votes and Rotten Tomatoes critics score. The other variables we were interested in were not significantly related to our response.
+
+This assertion comes from the fact that we were able to build a linear model to predict our response with the three aforementioned statistically significant predictors. However, we must keep in mind that the adjusted R squared of our final model is `r summary(lm_movies)$adj.r.squared`, so this means that roughly `r summary(lm_movies)$adj.r.squared * 100`% of the variability is explained by the model; which is good, but not great. This fact may partially explain why we have a non negligible discrepancy between the audience score predicted by our model and the actual audience score of the "Captain America : Civil War" movie.
 
 Moreover, we should also be aware of the fact that we could not validate our model hypothesis of homoscedasticity; the variablility of the residuals did not exhibit a nearly constant pattern. As the linear model assumptions were not fully respected, we must consider our conclusions with appropriate caution.
 
