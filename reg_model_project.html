@@ -561,6 +561,8 @@ diag_plot7 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(lm_movie
 </div>
 <div id="part-6-conclusion" class="section level2">
 <h2>Part 6: Conclusion</h2>
+<p>In conclusion, we may actually predict the popularity of a movie (as represented by the <em>audience_score</em> variable) by knowing only its genre, number of IMDb votes and Rotten Tomatoes critics score. The other variables we were interested in were not significantly related to our response. This assertion comes from the fact that we were able to build a linear model to predict our response with the three aforementioned statistically significant predictors. However, we must keep in mind that the adjusted R squared of our final model is 0.5675901, so this means that roughly 56.7590128% of the varaiability is explained by the model, which is good, but not great. This fact may partly explain why we have a non negligible discrepancy between the audience score predicted by our model and the actual audience score of the “Captain America : Civil War” movie.</p>
+<p>Moreover, we should also be aware of the fact that we could not validate our model hypothesis of homoscedasticity; the variablility of the residuals did not exhibit a nearly constant pattern. As the linear model assumptions were not fully respected, we must consider our conclusions with appropriate caution.</p>
 </div>
 
 
